@@ -7,26 +7,41 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mediocregopher/radix.v2/pool"
+	"github.com/gronnbeck/ndc2017/setupredis"
 )
 
 var (
-	redisAddr = flag.String("redis-addr", "localhost:6379", "tcp addr to connect redis tor")
-	redisPass = flag.String("redis-pass", "", "password to redis server")
+	readRedisAddr = flag.String("read-redis-addr", "localhost:6379", "tcp addr to connect redis tor")
+	readRedisPass = flag.String("read-redis-pass", "", "password to redis server")
+
+	writeRedisAddr = flag.String("write-redis-addr", "localhost:6379", "tcp addr to connect redis tor")
+	writeRedisPass = flag.String("write-redis-pass", "", "password to redis server")
 )
 
 func init() {
 	flag.Parse()
 
-	if redisAddr == nil || *redisAddr == "" {
-		panic("Reids addr cannot be empty")
+	if readRedisAddr == nil || *readRedisAddr == "" {
+		panic("Read Reids addr cannot be empty")
+	}
+
+	if writeRedisAddr == nil || *writeRedisAddr == "" {
+		panic("write Reids addr cannot be empty")
 	}
 }
 
 func main() {
-	var client *pool.Pool
-	getHandleFunc := get(client)
-	postHandleFunc := post(client)
+	readClient, err := setupredis.NewWait(*readRedisAddr, *readRedisPass)
+	if err != nil {
+		panic(err)
+	}
+	getHandleFunc := get(readClient)
+
+	writeClient, err := setupredis.NewWait(*writeRedisAddr, *writeRedisPass)
+	if err != nil {
+		panic(err)
+	}
+	postHandleFunc := post(writeClient)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))

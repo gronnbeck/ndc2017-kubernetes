@@ -30,9 +30,11 @@ spec:
               cpu: 1
               memory: 500Mi
           env:
-          - name: REDIS_ADDR
+          - name: REDIS_ADDR_READ
+            value: 127.0.0.1:6379
+          - name: REDIS_ADDR_WRITE
             value: 127.0.0.1:7007
-          - name: REDIS_PASS
+          - name: REDIS_PASS_WRITE
             valueFrom:
               secretKeyRef:
                 name: redis-api-simple
@@ -46,6 +48,20 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             timeoutSeconds: 2
+        - name: redis-sidekick
+          imagePullPolicy: Always
+          image: gronnbeck/redis-with-config
+          resources:
+            limits:
+              cpu: 2
+              memory: 400Mi
+            requests:
+              cpu: 200m
+              memory: 100Mi
+          volumeMounts:
+            - name: redis-config
+              mountPath: /usr/local/etc/redis
+              readOnly: true
         - name: ssl-tunnel
           imagePullPolicy: Always
           image: gronnbeck/compose-ssl-tunnel
@@ -78,3 +94,6 @@ spec:
         - name: ssl-tunnel-priv-key
           secret:
             secretName: ssl-tunnel-priv-key
+        - name: redis-config
+          configMap:
+            name: redis-sidekick

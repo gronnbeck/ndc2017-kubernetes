@@ -1,3 +1,6 @@
 #!/bin/sh
 
-./redisapi --redis-addr=$REDIS_ADDR --redis-pass=$REDIS_PASS
+./redisapi \
+--read-redis-addr=$REDIS_ADDR_READ \
+--write-redis-pass=$REDIS_PASS_WRITE \
+--write-redis-pass=$REDIS_PASS_WRITE
