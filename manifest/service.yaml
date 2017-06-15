@@ -1,0 +1,14 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: redis-api
+spec:
+  selector:
+    name: redis-api
+    app: redis-api
+    tier: api
+  ports:
+    - name: api
+      protocol: TCP
+      port: 8080

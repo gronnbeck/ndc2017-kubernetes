@@ -1,0 +1,55 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: helloworldserver
+spec:
+  selector:
+    name: helloworldserver
+    app: helloworldserver
+    tier: api
+  ports:
+    - name: api
+      protocol: TCP
+      port: 8080
+
+---
+kind: Deployment
+apiVersion: apps/v1beta1
+metadata:
+  name: helloworldserver
+  labels:
+      name: helloworldserver
+      app: helloworldserver
+      tier: api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: helloworldserver
+        app: helloworldserver
+        tier: api
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: default-pool
+      containers:
+        - name: helloworldserver
+          imagePullPolicy: Always
+          image: gronnbeck/helloworldserver
+          resources:
+            limits:
+              cpu: 4
+              memory: 1024Mi
+            requests:
+              cpu: 1
+              memory: 500Mi
+          ports:
+            - name: api
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 20
+            timeoutSeconds: 2

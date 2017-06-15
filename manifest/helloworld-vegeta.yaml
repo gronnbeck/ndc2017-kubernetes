@@ -1,0 +1,60 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: vegetaserver
+spec:
+  selector:
+    name: vegetaserver
+    app: vegetaserver
+    tier: api
+  ports:
+    - name: api
+      protocol: TCP
+      port: 8081
+
+---
+kind: Deployment
+apiVersion: apps/v1beta1
+metadata:
+  name: vegetaserver
+  labels:
+      name: vegetaserver
+      app: vegetaserver
+      tier: api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: vegetaserver
+        app: vegetaserver
+        tier: api
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: default-pool
+      containers:
+        - name: vegetaserver
+          imagePullPolicy: Always
+          image: gronnbeck/vegetaserver
+          resources:
+            limits:
+              cpu: 2
+              memory: 1024Mi
+            requests:
+              cpu: 400m
+              memory: 500Mi
+          env:
+          - name: TARGET_URL
+            value: http://helloworldserver.default.svc.cluster.local:8080
+          - name: ATTACK_RATE
+            value: "1000"
+          ports:
+            - name: api
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 20
+            timeoutSeconds: 2
