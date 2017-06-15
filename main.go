@@ -29,6 +29,9 @@ func main() {
 	postHandleFunc := post(client)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+
 		done := make(chan bool)
 		go func() {
 			if strings.ToLower(r.Method) == "get" {
@@ -38,6 +41,8 @@ func main() {
 			} else {
 				w.WriteHeader(404)
 			}
+
+			done <- true
 		}()
 
 		select {
